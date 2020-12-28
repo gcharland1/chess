@@ -34,12 +34,21 @@ def main():
                             r1, c1 = -1, -1
                 else:
                     r2, c2 = get_board_index(event.pos)
-                    set.move(r1, c1, r2, c2)
-                    r1, c1 = -1, -1
-                    if whos_turn == 'w':
-                        whos_turn = 'b'
+                    if set.is_chessman(r2, c2):
+                        color = set.board[r2][c2].color
                     else:
-                        whos_turn = 'w'
+                        color = ''
+
+                    if not (r1, c1) == (r2, c2) and not color == whos_turn:
+                        set.move(r1, c1, r2, c2)
+                        if whos_turn == 'w':
+                            whos_turn = 'b'
+                        else:
+                            whos_turn = 'w'
+                    else:
+                        print('Canceled move')
+                    r1, c1 = -1, -1
+
 
             if event.type == pygame.QUIT:
                 running = False
