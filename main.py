@@ -1,13 +1,10 @@
 import pygame
 import time
 import chess_set
-import chess_player
 import chessman
 
 def main():
     set = chess_set.ChessSet()
-    white = chess_player.ChessPlayer(set, 'w')
-    black = chess_player.ChessPlayer(set, 'b')
 
     root = pygame.display.set_mode((WIDTH, HEIGHT))
     pygame.display.set_caption('Chess Game')
