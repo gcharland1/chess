@@ -77,5 +77,7 @@ APP_WIDTH, APP_HEIGHT = (800, 800)
 SQ_W = int(APP_WIDTH/8)
 SQ_H = int(APP_HEIGHT/8)
 
+PLAYER = 'b' # Players plays black. Need to change display mechanics to allow player to face blacks
+
 if __name__=='__main__':
     main()

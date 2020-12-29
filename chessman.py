@@ -1,6 +1,7 @@
 class Chessman:
     def __init__(self, color, type):
         self.type = type
+        self.notation_letter = self.get_notation_letter()
         self.color = color
         self.active = False
         self.image = color + "_" + type + '.png'
@@ -27,6 +28,7 @@ class Chessman:
 
         elif self.type == 'knight':
             moves = [[1, 2], [1, -2], [-1, -2], [-1, 2], [2, 1], [2, -1], [-2, 1], [-2, -1]]
+
         elif self.type == 'king':
             moves = [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [1, -1], [-1, 1], [-1, -1]]
 
@@ -48,8 +50,20 @@ class Chessman:
                 moves.append([-l, l])
                 moves.append([-l, -l])
 
+        elif self.type == 'rook':
+            for l in range(8):
+                moves.append([l, 0])
+                moves.append([-l, 0])
+                moves.append([0, l])
+                moves.append([0, -l])
+
         return moves
 
+    def get_notation_letter(self):
+        if self.type == 'knight':
+            return self.type[1].capitalize()
+        else:
+            return self.type[0].capitalize()
 
 if __name__ == '__main__':
     print(Chessman('w', 'pawn').allowed_moves())

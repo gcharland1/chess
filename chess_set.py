@@ -69,7 +69,7 @@ class ChessSet:
                 ri = r1 + axis[0]*i
                 ci = c1 + axis[1]*i
                 if self.is_chessman(ri, ci):
-                    print(f"There's a piece at [{ri}, {ci}]")
+                    print(f"There's interference at {self.cols[ci]}{self.rows[ri]}")
                     return False
 
         return valid_move
