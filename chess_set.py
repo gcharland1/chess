@@ -1,4 +1,5 @@
 import chessman
+import copy
 
 class ChessSet:
 
@@ -8,6 +9,8 @@ class ChessSet:
     def __init__(self):
         self.board = [['' for i in range(8)] for j in range(8)]
         self.populate_board()
+        self.current_move = 0.0
+        self.move_log = []
 
     def populate_board(self):
         for c in range(8):
@@ -29,10 +32,39 @@ class ChessSet:
             self.board[r][6] = chessman.Chessman(color, 'knight')
             self.board[r][7] = chessman.Chessman(color, 'rook')
 
+    def reset_board(self):
+        self.board = [['' for i in range(8)] for j in range(8)]
+        self.populate_board()
+
     def move(self, r1, c1, r2, c2):
+        self.update_log()
+
         self.board[r2][c2] = self.board[r1][c1]
         self.board[r1][c1] = ''
         self.board[r2][c2].active = True
+
+
+        self.current_move += 0.5
+        print(len(self.move_log), self.current_move)
+
+    def undo(self):
+        if self.current_move > 0:
+            self.board = self.move_log.pop(-1)
+            self.current_move -= 0.5
+            return True
+        else:
+            print('Initial state, cannot undo further')
+            return False
+
+    def update_log(self):
+        current_state = []
+        for i in range(len(self.board)):
+            row = []
+            for j in range(len(self.board[0])):
+                row.append(copy.deepcopy(self.board[i][j]))
+            current_state.append(row)
+
+        self.move_log.append(current_state)
 
     def is_chessman(self, row, col):
         if type(self.board[row][col]) == chessman.Chessman:
@@ -74,12 +106,12 @@ class ChessSet:
 
         return valid_move
 
-def cmd_display(set):
+def cmd_display(board_state):
     print('\n\n\t' + '|----'*8 + '|')
     for r in range(8):
         print('\t|', end='')
         for c in range(8):
-            p = set.board[r][c]
+            p = board_state[r][c]
             if type(p) == chessman.Chessman:
                 if p.type == 'knight':
                     print(f'{p.color}{p.type[1]}'.center(4), end='|')
@@ -96,4 +128,11 @@ def cmd_display(set):
 
 if __name__ == '__main__':
     set = ChessSet()
-    cmd_display(set)
+    set.move(6, 3, 4, 3)
+    cmd_display(set.board)
+    set.move(1, 3, 3, 3)
+    cmd_display(set.board)
+    set.undo()
+    cmd_display(set.board)
+    set.undo()
+    cmd_display(set.board)

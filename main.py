@@ -19,12 +19,16 @@ def main():
             if event.type == pygame.MOUSEBUTTONUP:
                 r1, c1, whos_turn = make_move(set, event.pos, whos_turn, r1, c1)
 
+            if event.type == pygame.KEYUP:
+                if event.key == pygame.K_u:
+                    whos_turn = undo_move(set, whos_turn)
+
             if event.type == pygame.QUIT:
                 running = False
 
     pygame.display.quit()
 
-def update_display(root, bg, set, whos_turn, ):
+def update_display(root, bg, set, whos_turn):
     if whos_turn == 'w':
         caption = 'Whites to play'
     else:
@@ -69,7 +73,15 @@ def make_move(set, event_pos, whos_turn, r1, c1):
 
     return r1, c1, whos_turn
 
-
+def undo_move(set, whos_turn):
+    undid = set.undo()
+    if undid:
+        if whos_turn == 'w':
+            return 'b'
+        else:
+            return 'w'
+    else:
+        return whos_turn
 
 IMAGE_DIR = './images/'
 BG_IMAGE = 'chessboard.png'
