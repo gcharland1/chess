@@ -36,6 +36,18 @@ class Chessman:
                 moves.append([l, -l])
                 moves.append([-l, l])
                 moves.append([-l, -l])
+
+        elif self.type == 'queen':
+            for l in range(8):
+                moves.append([l, 0])
+                moves.append([-l, 0])
+                moves.append([0, l])
+                moves.append([0, -l])
+                moves.append([l, l])
+                moves.append([l, -l])
+                moves.append([-l, l])
+                moves.append([-l, -l])
+
         return moves
 
 

@@ -63,7 +63,14 @@ class ChessSet:
             return False
 
         if not played_piece.type == 'knight':
-            pass
+            move_length = max(abs(move[0]), abs(move[1]))
+            axis = [int(move[0]/move_length), int(move[1]/move_length)]
+            for i in range(1, move_length):
+                ri = r1 + axis[0]*i
+                ci = c1 + axis[1]*i
+                if self.is_chessman(ri, ci):
+                    print(f"There's a piece at [{ri}, {ci}]")
+                    return False
 
         return valid_move
 

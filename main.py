@@ -4,7 +4,7 @@ import chess_set
 def main():
     set = chess_set.ChessSet()
 
-    root = pygame.display.set_mode((WIDTH, HEIGHT))
+    root = pygame.display.set_mode((APP_WIDTH, APP_HEIGHT))
     pygame.display.set_caption('Chess Game')
     bg = pygame.image.load(IMAGE_DIR + BG_IMAGE)
 
@@ -35,19 +35,18 @@ def update_display(root, bg, set, whos_turn, ):
         for c in range(len(set.board)):
             if set.is_chessman(r, c):
                 img = set.board[r][c].image
-                x = int(SQ_G*c + 2)
+                x = int(SQ_W*c + 2)
                 y = int(SQ_H*r + 2)
                 root.blit(pygame.image.load(IMAGE_DIR + img), (x, y))
 
     pygame.display.update()
 
 def get_board_index(pos):
-    c = int(pos[0]/SQ_G)
+    c = int(pos[0]/SQ_W)
     r = int(pos[1]/SQ_H)
     return (r, c)
 
 def make_move(set, event_pos, whos_turn, r1, c1):
-    valid_move = False
     if (r1, c1) == (-1, -1):
         r, c = get_board_index(event_pos)
         if set.is_valid_piece(r, c, whos_turn):
@@ -74,9 +73,9 @@ def make_move(set, event_pos, whos_turn, r1, c1):
 
 IMAGE_DIR = './images/'
 BG_IMAGE = 'chessboard.png'
-WIDTH, HEIGHT = (800, 800)
-SQ_G = int(WIDTH/8)
-SQ_H = int(HEIGHT/8)
+APP_WIDTH, APP_HEIGHT = (800, 800)
+SQ_W = int(APP_WIDTH/8)
+SQ_H = int(APP_HEIGHT/8)
 
 if __name__=='__main__':
     main()
