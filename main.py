@@ -12,21 +12,30 @@ def main():
     r1, c1 = (-1, -1)
 
     running = True
-
+    update_display(root, bg, set, whos_turn)
     while running:
-        update_display(root, bg, set, whos_turn)
+        update = False
         for event in pygame.event.get():
             if event.type == pygame.MOUSEBUTTONUP:
                 r1, c1, whos_turn = make_move(set, event.pos, whos_turn, r1, c1)
+                update = True
 
             if event.type == pygame.KEYUP:
                 if event.key == pygame.K_u:
                     whos_turn = undo_move(set, whos_turn)
+                    update = True
+                if event.key == pygame.K_r:
+                    whos_turn = new_game(set)
+                    update = True
 
             if event.type == pygame.QUIT:
                 running = False
 
+        if update:
+            update_display(root, bg, set, whos_turn)
+
     pygame.display.quit()
+    return False
 
 def update_display(root, bg, set, whos_turn):
     if whos_turn == 'w':
@@ -82,6 +91,11 @@ def undo_move(set, whos_turn):
             return 'w'
     else:
         return whos_turn
+
+def new_game(set):
+    set.reset_board()
+    return 'w'
+
 
 IMAGE_DIR = './images/'
 BG_IMAGE = 'chessboard.png'

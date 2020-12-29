@@ -1,14 +1,14 @@
 import chessman
 import copy
 
+
 class ChessSet:
 
     cols = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
     rows = ['8', '7', '6', '5', '4', '3', '2', '1']
 
     def __init__(self):
-        self.board = [['' for i in range(8)] for j in range(8)]
-        self.populate_board()
+        self.reset_board()
         self.current_move = 0.0
         self.move_log = []
 
@@ -33,19 +33,19 @@ class ChessSet:
             self.board[r][7] = chessman.Chessman(color, 'rook')
 
     def reset_board(self):
-        self.board = [['' for i in range(8)] for j in range(8)]
+        self.board = [['' for _ in range(8)] for _ in range(8)]
         self.populate_board()
+        self.move_log = []
+        self.current_move = 0.0
 
     def move(self, r1, c1, r2, c2):
         self.update_log()
+        self.current_move += 0.5
 
         self.board[r2][c2] = self.board[r1][c1]
         self.board[r1][c1] = ''
         self.board[r2][c2].active = True
 
-
-        self.current_move += 0.5
-        print(len(self.move_log), self.current_move)
 
     def undo(self):
         if self.current_move > 0:
