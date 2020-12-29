@@ -47,31 +47,25 @@ def get_board_index(pos):
     return (r, c)
 
 def make_move(set, event_pos, whos_turn, r1, c1):
+    valid_move = False
     if (r1, c1) == (-1, -1):
-        r1, c1 = get_board_index(event_pos)
-        if not set.is_chessman(r1, c1):
-            r1, c1 = -1, -1
-            print('Please select a piece in order to move it!')
+        r, c = get_board_index(event_pos)
+        if set.is_valid_piece(r, c, whos_turn):
+            return r, c, whos_turn
         else:
-            color = set.board[r1][c1].color
-            if not color == whos_turn:
-                print(f'Wrong team! Look at caption to see who''s turn it is.')
-                r1, c1 = -1, -1
+            print('Please pick a valid piece. Look at caption to see which color plays.')
+            return -1, -1, whos_turn
     else:
         r2, c2 = get_board_index(event_pos)
-        if set.is_chessman(r2, c2):
-            color = set.board[r2][c2].color
-        else:
-            color = ''
-
-        if not (r1, c1) == (r2, c2) and not color == whos_turn:
+        if set.is_valid_move(r1, c1, r2, c2, whos_turn):
             set.move(r1, c1, r2, c2)
             if whos_turn == 'w':
                 whos_turn = 'b'
             else:
                 whos_turn = 'w'
         else:
-            print('Canceled move')
+            print('Invalid Move')
+
         r1, c1 = -1, -1
 
     return r1, c1, whos_turn

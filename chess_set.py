@@ -1,14 +1,6 @@
 import chessman
 
 class ChessSet:
-    chessman_number = {
-        'pawn': 8,
-        'rook': 2,
-        'knight': 2,
-        'bishop': 2,
-        'queen': 1,
-        'king': 1,
-    }
 
     cols = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
     rows = ['8', '7', '6', '5', '4', '3', '2', '1']
@@ -40,12 +32,40 @@ class ChessSet:
     def move(self, r1, c1, r2, c2):
         self.board[r2][c2] = self.board[r1][c1]
         self.board[r1][c1] = ''
+        self.board[r2][c2].active = True
 
     def is_chessman(self, row, col):
         if type(self.board[row][col]) == chessman.Chessman:
             return True
         else:
             return False
+
+    def is_valid_piece(self, row, col, player_color):
+        valid_piece = False
+        if self.is_chessman(row, col):
+            if self.board[row][col].color == player_color:
+                valid_piece = True
+
+        return valid_piece
+
+    def is_valid_move(self, r1, c1, r2, c2, player_color):
+        played_piece = self.board[r1][c1]
+        move = [r2-r1, c2-c1]
+        valid_move = True
+        take = False
+        if self.is_chessman(r2, c2):
+            if self.board[r2][c2].color == player_color:
+                return False
+            else:
+                take = True
+
+        if not move in played_piece.allowed_moves(take):
+            return False
+
+        if not played_piece.type == 'knight':
+            pass
+
+        return valid_move
 
 def cmd_display(set):
     print('\n\n\t' + '|----'*8 + '|')
@@ -54,7 +74,10 @@ def cmd_display(set):
         for c in range(8):
             p = set.board[r][c]
             if type(p) == chessman.Chessman:
-                print(f'{p.color}{p.type[0]}'.center(4), end='|')
+                if p.type == 'knight':
+                    print(f'{p.color}{p.type[1]}'.center(4), end='|')
+                else:
+                    print(f'{p.color}{p.type[0]}'.center(4), end='|')
             else:
                 print(p.center(4), end='|')
         print(set.rows[r].center(3), end='')
@@ -66,7 +89,4 @@ def cmd_display(set):
 
 if __name__ == '__main__':
     set = ChessSet()
-    cmd_display(set)
-    set.move(6, 4, 4, 4)
-    set.move(1, 2, 3, 2)
     cmd_display(set)
