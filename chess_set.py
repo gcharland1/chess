@@ -43,26 +43,24 @@ class ChessSet:
                     else:
                         self.blacks.append(self.board[i][j])
 
-
     def reset_board(self):
         self.board = [['' for _ in range(8)] for _ in range(8)]
         self.populate_board()
         self.define_teams()
+        self.set_valid_moves()
         self.move_log = []
         self.current_move = 0.0
 
-    def move(self, r1, c1, r2, c2, take):
+    def move(self, r1, c1, r2, c2):
         self.update_log()
         self.current_move += 0.5
         played_piece = self.board[r1][c1]
-        if take:
+        if self.is_chessman(r2, c2):
             taken_piece = self.board[r2][c2]
             if taken_piece in self.whites:
                 self.whites.remove(taken_piece)
-                print(f"White now has {len(self.whites)} pieces")
             else:
                 self.blacks.remove(taken_piece)
-                print(f"Black now has {len(self.blacks)} pieces")
 
         self.board[r2][c2] = played_piece
         self.board[r1][c1] = ''
@@ -87,44 +85,87 @@ class ChessSet:
         else:
             return False
 
-    def is_valid_piece(self, row, col, player_color):
-        valid_piece = False
+    def is_players_piece(self, row, col, player_color):
+        players_piece = False
         if self.is_chessman(row, col):
             if self.board[row][col].color == player_color:
-                valid_piece = True
+                players_piece = True
 
-        return valid_piece
+        return players_piece
 
-    def is_valid_move(self, r1, c1, r2, c2, player_color):
-        played_piece = self.board[r1][c1]
-        move = [r2-r1, c2-c1]
-        valid_move = True
-        take = False
-        rock = False
-        if self.is_chessman(r2, c2):
-            if self.board[r2][c2].color == player_color:
-                return False
+    def set_valid_moves(self):
+        for r in range(len(self.board)):
+            for c in range(len(self.board[r])):
+                if self.is_chessman(r, c):
+                    self.list_possible_moves(r, c)
+
+
+    def list_possible_moves(self, row, col):
+        piece = self.board[row][col]
+        move_list = []
+
+        if piece.type == 'pawn':
+            if piece.color == 'b':
+                axis = 1
             else:
-                take = True
+                axis = -1
 
-        if played_piece.type == 'king' and played_piece.active == False and abs(c1-c2) == 2:
-            # Respects basic conditions to rock
-            pass
+            if not self.is_chessman(row + axis, col):
+                move_list.append([row + axis, col])
 
-        if not move in played_piece.allowed_moves(take, rock):
-            return False
+            if not piece.active and not self.is_chessman(row + 2 * axis, col) and not self.is_chessman(row + axis, col):
+                move_list.append([row + 2 * axis, col])
 
-        if not played_piece.type == 'knight':
-            move_length = max(abs(move[0]), abs(move[1]))
-            axis = [int(move[0]/move_length), int(move[1]/move_length)]
-            for i in range(1, move_length):
-                ri = r1 + axis[0]*i
-                ci = c1 + axis[1]*i
-                if self.is_chessman(ri, ci):
-                    print(f"There's interference at {self.cols[ci]}{self.rows[ri]}")
-                    return False
+            can_take_right = False
+            can_take_left = False
+            if col + 1 < 8:
+                can_take_right = self.is_chessman(row + axis, col + 1) and not self.is_players_piece(row + axis, col + 1, piece.color)
+            if col - 1 >= 0:
+                can_take_left = self.is_chessman(row + axis, col - 1) and not self.is_players_piece(row + axis, col - 1, piece.color)
 
-        return valid_move, take
+            if can_take_right:
+                move_list.append([row + axis, col + 1])
+            if can_take_left:
+                move_list.append([row + axis, col - 1])
+
+        elif piece.type == 'knight':
+            possible_directions = [[1, 2], [1, -2], [-1, -2], [-1, 2], [2, 1], [2, -1], [-2, 1], [-2, -1]]
+            for move in possible_directions:
+                r2 = row + move[0]
+                c2 = col + move[1]
+                if r2 in range(8) and c2 in range(8) and not self.is_players_piece(r2, c2, piece.color):
+                    move_list.append([r2, c2])
+
+        elif piece.type == 'king':
+            move_list = []
+
+        else:
+            if piece.type == 'queen':
+                axes = [[0, 1], [0, -1], [1, 0], [-1, 0], [1, 1], [1, -1], [-1, 1], [-1, -1]]
+            elif piece.type == 'bishop':
+                axes = [[1, 1], [1, -1], [-1, 1], [-1, -1]]
+            elif piece.type == 'rook':
+                axes = [[0, 1], [0, -1], [1, 0], [-1, 0]]
+
+            for axis in axes:
+                for l in range(1, 8):
+                    r2 = row + l*axis[0]
+                    c2 = col + l*axis[1]
+                    if r2 in range(8) and c2 in range(8) and not self.is_players_piece(r2, c2, piece.color):
+                        move_list.append([r2, c2])
+                        if self.is_chessman(r2, c2):
+                            break
+                    else:
+                        break
+
+
+        piece.valid_moves = move_list
+        return move_list
+
+
+#############################
+### End of class ChessSet ###
+#############################
 
 def cmd_display(board_state):
     print('\n\n\t' + '|----'*8 + '|')
@@ -148,9 +189,8 @@ def cmd_display(board_state):
 
 if __name__ == '__main__':
     set = ChessSet()
-    set.move(1, 4, 6, 4, True)
+    set.move(1, 1, 5, 1)
     cmd_display(set.board)
-    print(len(set.blacks))
-    print(len(set.whites))
-    set.undo()
-    print(len(set.whites))
+    set.set_valid_moves()
+    print(f"White moves are: {set.board[6][1].valid_moves}")
+    print(f"Black moves are: {set.board[5][1].valid_moves}")

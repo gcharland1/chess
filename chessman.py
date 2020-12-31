@@ -1,38 +1,20 @@
 class Chessman:
     def __init__(self, color, type):
         self.type = type
-        self.notation_letter = self.get_notation_letter()
+        self.notation_letter = self.notation_letter()
         self.color = color
         self.active = False
+        self.valid_moves = []
+        self.possible_moves = self.all_possible_moves()
         self.image = self.color + "_" + self.type + '.png'
 
-    def allowed_moves(self, is_a_take = False, is_rock = False):
+    def all_possible_moves(self):
         moves = []
-        if self.type == 'pawn':
-            if self.color == 'b':
-                if is_a_take:
-                    moves.append([1, 1])
-                    moves.append([1, -1])
-                else:
-                    moves.append([1, 0])
-                    if not self.active:
-                        moves.append([2, 0])
-            else:
-                if is_a_take:
-                    moves.append([-1, 1])
-                    moves.append([-1, -1])
-                else:
-                    moves.append([-1, 0])
-                    if not self.active:
-                        moves.append([-2, 0])
-
-        elif self.type == 'knight':
+        if self.type == 'knight':
             moves = [[1, 2], [1, -2], [-1, -2], [-1, 2], [2, 1], [2, -1], [-2, 1], [-2, -1]]
 
         elif self.type == 'king':
-            moves = [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [1, -1], [-1, 1], [-1, -1]]
-            if is_rock:
-                pass
+            moves = [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [1, -1], [-1, 1], [-1, -1], [0, -2], [0, 2]]
 
         elif self.type == 'bishop':
             for l in range(8):
@@ -61,7 +43,7 @@ class Chessman:
 
         return moves
 
-    def get_notation_letter(self):
+    def notation_letter(self):
         if self.type == 'knight':
             return self.type[1].capitalize()
         else:

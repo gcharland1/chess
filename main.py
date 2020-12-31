@@ -19,6 +19,7 @@ def main():
         for event in pygame.event.get():
             if event.type == pygame.MOUSEBUTTONUP:
                 r1, c1, whos_turn = make_move(set, event.pos, whos_turn, r1, c1)
+                print(f"Possible moves are: {set.board[r1][c1].valid_moves}")
                 update = True
 
             if event.type == pygame.KEYUP:
@@ -36,6 +37,7 @@ def main():
 
         if update:
             update_display(root, bg, set, whos_turn)
+            set.set_valid_moves()
 
     pygame.display.quit()
     return False
@@ -66,16 +68,15 @@ def get_board_index(pos):
 def make_move(set, event_pos, whos_turn, r1, c1):
     if (r1, c1) == (-1, -1):
         r, c = get_board_index(event_pos)
-        if set.is_valid_piece(r, c, whos_turn):
+        if set.is_players_piece(r, c, whos_turn):
             return r, c, whos_turn
         else:
             print('Please pick a valid piece. Look at caption to see which color plays.')
             return -1, -1, whos_turn
     else:
         r2, c2 = get_board_index(event_pos)
-        valid_move, take = set.is_valid_move(r1, c1, r2, c2, whos_turn)
-        if valid_move:
-            set.move(r1, c1, r2, c2, take)
+        if [r2, c2] in set.board[r1][c1].valid_moves:
+            set.move(r1, c1, r2, c2)
             whos_turn = switch_teams(whos_turn)
         else:
             print('Invalid Move')
