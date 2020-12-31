@@ -73,12 +73,10 @@ def make_move(set, event_pos, whos_turn, r1, c1):
             return -1, -1, whos_turn
     else:
         r2, c2 = get_board_index(event_pos)
-        if set.is_valid_move(r1, c1, r2, c2, whos_turn):
-            set.move(r1, c1, r2, c2)
-            if whos_turn == 'w':
-                whos_turn = 'b'
-            else:
-                whos_turn = 'w'
+        valid_move, take = set.is_valid_move(r1, c1, r2, c2, whos_turn)
+        if valid_move:
+            set.move(r1, c1, r2, c2, take)
+            whos_turn = switch_teams(whos_turn)
         else:
             print('Invalid Move')
 
@@ -89,12 +87,15 @@ def make_move(set, event_pos, whos_turn, r1, c1):
 def undo_move(set, whos_turn):
     undid = set.undo()
     if undid:
-        if whos_turn == 'w':
-            return 'b'
-        else:
-            return 'w'
+        switch_teams(whos_turn)
     else:
         return whos_turn
+
+def switch_teams(team):
+    if team == 'w':
+        return 'b'
+    else:
+        return 'w'
 
 def new_game(set):
     set.reset_board()

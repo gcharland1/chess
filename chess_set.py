@@ -32,23 +32,46 @@ class ChessSet:
             self.board[r][6] = chessman.Chessman(color, 'knight')
             self.board[r][7] = chessman.Chessman(color, 'rook')
 
+    def define_teams(self):
+        self.whites = []
+        self.blacks = []
+        for i in range(len(self.board)):
+            for j in range(len(self.board[i])):
+                if self.is_chessman(i, j):
+                    if self.board[i][j].color == 'w':
+                        self.whites.append(self.board[i][j])
+                    else:
+                        self.blacks.append(self.board[i][j])
+
+
     def reset_board(self):
         self.board = [['' for _ in range(8)] for _ in range(8)]
         self.populate_board()
+        self.define_teams()
         self.move_log = []
         self.current_move = 0.0
 
-    def move(self, r1, c1, r2, c2):
+    def move(self, r1, c1, r2, c2, take):
         self.update_log()
         self.current_move += 0.5
+        played_piece = self.board[r1][c1]
+        if take:
+            taken_piece = self.board[r2][c2]
+            if taken_piece in self.whites:
+                self.whites.remove(taken_piece)
+                print(f"White now has {len(self.whites)} pieces")
+            else:
+                self.blacks.remove(taken_piece)
+                print(f"Black now has {len(self.blacks)} pieces")
 
-        self.board[r2][c2] = self.board[r1][c1]
+        self.board[r2][c2] = played_piece
         self.board[r1][c1] = ''
-        self.board[r2][c2].active = True
+        played_piece.active = True
 
     def undo(self):
         if self.current_move > 0:
             self.board = self.move_log.pop(-1)
+            self.define_teams()
             self.current_move -= 0.5
             return True
         else:
@@ -56,14 +79,7 @@ class ChessSet:
             return False
 
     def update_log(self):
-        current_state = []
-        for i in range(len(self.board)):
-            row = []
-            for j in range(len(self.board[0])):
-                row.append(copy.deepcopy(self.board[i][j]))
-            current_state.append(row)
-
-        self.move_log.append(current_state)
+        self.move_log.append(copy.deepcopy(self.board))
 
     def is_chessman(self, row, col):
         if type(self.board[row][col]) == chessman.Chessman:
@@ -108,7 +124,7 @@ class ChessSet:
                     print(f"There's interference at {self.cols[ci]}{self.rows[ri]}")
                     return False
 
-        return valid_move
+        return valid_move, take
 
 def cmd_display(board_state):
     print('\n\n\t' + '|----'*8 + '|')
@@ -132,11 +148,9 @@ def cmd_display(board_state):
 
 if __name__ == '__main__':
     set = ChessSet()
-    set.move(6, 3, 4, 3)
+    set.move(1, 4, 6, 4, True)
     cmd_display(set.board)
-    set.move(1, 3, 3, 3)
-    cmd_display(set.board)
+    print(len(set.blacks))
+    print(len(set.whites))
     set.undo()
-    cmd_display(set.board)
-    set.undo()
-    cmd_display(set.board)
+    print(len(set.whites))
