@@ -13,6 +13,7 @@ def main():
 
     running = True
     update_display(root, bg, set, whos_turn)
+
     while running:
         update = False
         for event in pygame.event.get():
@@ -27,6 +28,8 @@ def main():
                 if event.key == pygame.K_r:
                     whos_turn = new_game(set)
                     update = True
+                if event.key == pygame.K_m:
+                    print('Display Menu')
 
             if event.type == pygame.QUIT:
                 running = False
@@ -39,10 +42,11 @@ def main():
 
 def update_display(root, bg, set, whos_turn):
     if whos_turn == 'w':
-        caption = 'Whites to play'
+        color = 'White'
     else:
-        caption = 'Blacks to play'
-    pygame.display.set_caption('Chess Game - ' + caption)
+        color = 'Black'
+    caption = f'Chess Game - {color} to play'
+    pygame.display.set_caption(caption)
     root.blit(bg, (0, 0))
     for r in range(len(set.board)):
         for c in range(len(set.board)):

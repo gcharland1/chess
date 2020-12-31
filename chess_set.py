@@ -46,7 +46,6 @@ class ChessSet:
         self.board[r1][c1] = ''
         self.board[r2][c2].active = True
 
-
     def undo(self):
         if self.current_move > 0:
             self.board = self.move_log.pop(-1)
@@ -85,13 +84,18 @@ class ChessSet:
         move = [r2-r1, c2-c1]
         valid_move = True
         take = False
+        rock = False
         if self.is_chessman(r2, c2):
             if self.board[r2][c2].color == player_color:
                 return False
             else:
                 take = True
 
-        if not move in played_piece.allowed_moves(take):
+        if played_piece.type == 'king' and played_piece.active == False and abs(c1-c2) == 2:
+            # Respects basic conditions to rock
+            pass
+
+        if not move in played_piece.allowed_moves(take, rock):
             return False
 
         if not played_piece.type == 'knight':

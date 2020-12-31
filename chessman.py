@@ -4,9 +4,9 @@ class Chessman:
         self.notation_letter = self.get_notation_letter()
         self.color = color
         self.active = False
-        self.image = color + "_" + type + '.png'
+        self.image = self.color + "_" + self.type + '.png'
 
-    def allowed_moves(self, is_a_take):
+    def allowed_moves(self, is_a_take = False, is_rock = False):
         moves = []
         if self.type == 'pawn':
             if self.color == 'b':
@@ -31,6 +31,8 @@ class Chessman:
 
         elif self.type == 'king':
             moves = [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [1, -1], [-1, 1], [-1, -1]]
+            if is_rock:
+                pass
 
         elif self.type == 'bishop':
             for l in range(8):
