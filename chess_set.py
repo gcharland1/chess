@@ -55,6 +55,7 @@ class ChessSet:
         self.populate_board()
         self.define_teams()
         self.set_players_moves()
+        self.who_plays = self.white_player
 
         self.current_move = 0.0
         self.move_log = []
@@ -94,6 +95,7 @@ class ChessSet:
             self.board = self.move_log.pop(-1)
             self.define_teams()
             self.set_players_moves()
+            self.toggle_player()
             self.current_move -= 0.5
             return True
         else:

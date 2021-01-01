@@ -15,5 +15,3 @@ class Chessman:
         else:
             return self.type[0].capitalize()
 
-if __name__ == '__main__':
-    print(Chessman('w', 'pawn').allowed_moves())

@@ -10,7 +10,6 @@ def main():
 
     whos_turn = 'w'
     r1, c1 = [-1, -1]
-    possible_moves = []
 
     running = True
     update_display(root, bg, set, r1, c1)
@@ -19,19 +18,18 @@ def main():
         update = False
         for event in pygame.event.get():
             if event.type == pygame.MOUSEBUTTONUP:
-                r1, c1, possible_moves = make_move(set, event.pos, r1, c1)
+                r1, c1 = make_move(set, event.pos, r1, c1)
                 update = True
 
             if event.type == pygame.KEYUP:
                 if event.key == pygame.K_u:
-                    whos_turn = undo_move(set, whos_turn)
+                    undid = set.undo()
                     r1 = -1
                     c1 = -1
-                    possible_moves = []
                     update = True
 
                 if event.key == pygame.K_r:
-                    whos_turn = new_game(set)
+                    set.reset_board()
                     update = True
 
                 if event.key == pygame.K_m:
@@ -48,8 +46,7 @@ def main():
     return False
 
 def update_display(root, bg, set, r1, c1):
-    whos_turn = set.who_plays
-    if whos_turn == 'w':
+    if set.who_plays.color == 'w':
         color = 'White'
     else:
         color = 'Black'
@@ -83,10 +80,10 @@ def make_move(set, event_pos, r1, c1):
         r, c = get_board_index(event_pos)
         if set.is_players_piece(r, c, set.who_plays):
             print(set.board[r][c].valid_moves)
-            return r, c, set.board[r][c].valid_moves
+            return r, c
         else:
             print('Please pick a valid piece. Look at caption to see which color plays.')
-            return -1, -1, []
+            return -1, -1
     else:
         r2, c2 = get_board_index(event_pos)
         if [r2, c2] in set.board[r1][c1].valid_moves:
@@ -96,24 +93,8 @@ def make_move(set, event_pos, r1, c1):
 
         r1, c1 = -1, -1
 
-    return r1, c1, []
+    return r1, c1
 
-def undo_move(set, whos_turn):
-    undid = set.undo()
-    if undid:
-        whos_turn = switch_teams(whos_turn)
-
-    return whos_turn
-
-def switch_teams(team):
-    if team == 'w':
-        return 'b'
-    else:
-        return 'w'
-
-def new_game(set):
-    set.reset_board()
-    return 'w'
 
 
 IMAGE_DIR = './images/'
