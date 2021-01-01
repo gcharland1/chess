@@ -10,25 +10,30 @@ def main():
 
     whos_turn = 'w'
     r1, c1 = (-1, -1)
+    possible_moves = []
 
     running = True
-    update_display(root, bg, set, whos_turn)
+    update_display(root, bg, set, whos_turn, possible_moves)
 
     while running:
         update = False
         for event in pygame.event.get():
             if event.type == pygame.MOUSEBUTTONUP:
-                r1, c1, whos_turn = make_move(set, event.pos, whos_turn, r1, c1)
-                print(f"Possible moves are: {set.board[r1][c1].valid_moves}")
+                r1, c1, whos_turn, possible_moves = make_move(set, event.pos, whos_turn, r1, c1)
                 update = True
 
             if event.type == pygame.KEYUP:
                 if event.key == pygame.K_u:
                     whos_turn = undo_move(set, whos_turn)
+                    r1 = -1
+                    c1 = -1
+                    possible_moves = []
                     update = True
+
                 if event.key == pygame.K_r:
                     whos_turn = new_game(set)
                     update = True
+
                 if event.key == pygame.K_m:
                     print('Display Menu')
 
@@ -36,13 +41,13 @@ def main():
                 running = False
 
         if update:
-            update_display(root, bg, set, whos_turn)
+            update_display(root, bg, set, whos_turn, possible_moves)
             set.set_valid_moves()
 
     pygame.display.quit()
     return False
 
-def update_display(root, bg, set, whos_turn):
+def update_display(root, bg, set, whos_turn, moves):
     if whos_turn == 'w':
         color = 'White'
     else:
@@ -58,6 +63,11 @@ def update_display(root, bg, set, whos_turn):
                 y = int(SQ_H*r + 2)
                 root.blit(pygame.image.load(IMAGE_DIR + img), (x, y))
 
+    for m in moves:
+        x = int(SQ_W * m[1])
+        y = int(SQ_H * m[0])
+        root.blit(pygame.image.load(IMAGE_DIR + 'allowed_move.png'), (x, y))
+
     pygame.display.update()
 
 def get_board_index(pos):
@@ -69,10 +79,10 @@ def make_move(set, event_pos, whos_turn, r1, c1):
     if (r1, c1) == (-1, -1):
         r, c = get_board_index(event_pos)
         if set.is_players_piece(r, c, whos_turn):
-            return r, c, whos_turn
+            return r, c, whos_turn, set.board[r][c].valid_moves
         else:
             print('Please pick a valid piece. Look at caption to see which color plays.')
-            return -1, -1, whos_turn
+            return -1, -1, whos_turn, []
     else:
         r2, c2 = get_board_index(event_pos)
         if [r2, c2] in set.board[r1][c1].valid_moves:
@@ -83,14 +93,14 @@ def make_move(set, event_pos, whos_turn, r1, c1):
 
         r1, c1 = -1, -1
 
-    return r1, c1, whos_turn
+    return r1, c1, whos_turn, []
 
 def undo_move(set, whos_turn):
     undid = set.undo()
     if undid:
-        switch_teams(whos_turn)
-    else:
-        return whos_turn
+        whos_turn = switch_teams(whos_turn)
+
+    return whos_turn
 
 def switch_teams(team):
     if team == 'w':

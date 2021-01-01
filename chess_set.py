@@ -1,21 +1,25 @@
 import chessman
+import chess_player
 import copy
 
 
 class ChessSet:
 
-    cols = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
-    rows = ['8', '7', '6', '5', '4', '3', '2', '1']
+    cols_letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
+    rows_numbers = ['8', '7', '6', '5', '4', '3', '2', '1']
 
     def __init__(self):
+        self.white_player = chess_player.ChessPlayer('w')
+        self.black_player = chess_player.ChessPlayer('b')
+        self.who_plays = self.white_player
         self.reset_board()
         self.current_move = 0.0
         self.move_log = []
 
     def populate_board(self):
         for c in range(8):
-            self.board[1][c] = chessman.Chessman('b', 'pawn')
-            self.board[6][c] = chessman.Chessman('w', 'pawn')
+            self.board[1][c] = chessman.Chessman('b', 'pawn', [1, c])
+            self.board[6][c] = chessman.Chessman('w', 'pawn', [6, c])
 
         for r in [0, 7]:
             if r == 7:
@@ -23,53 +27,70 @@ class ChessSet:
             else:
                 color = 'b'
 
-            self.board[r][0] = chessman.Chessman(color, 'rook')
-            self.board[r][1] = chessman.Chessman(color, 'knight')
-            self.board[r][2] = chessman.Chessman(color, 'bishop')
-            self.board[r][3] = chessman.Chessman(color, 'queen')
-            self.board[r][4] = chessman.Chessman(color, 'king')
-            self.board[r][5] = chessman.Chessman(color, 'bishop')
-            self.board[r][6] = chessman.Chessman(color, 'knight')
-            self.board[r][7] = chessman.Chessman(color, 'rook')
+            self.board[r][0] = chessman.Chessman(color, 'rook', [r, 0])
+            self.board[r][1] = chessman.Chessman(color, 'knight', [r, 1])
+            self.board[r][2] = chessman.Chessman(color, 'bishop', [r, 2])
+            self.board[r][3] = chessman.Chessman(color, 'queen', [r, 3])
+            self.board[r][4] = chessman.Chessman(color, 'king', [r, 4])
+            self.board[r][5] = chessman.Chessman(color, 'bishop', [r, 5])
+            self.board[r][6] = chessman.Chessman(color, 'knight', [r, 6])
+            self.board[r][7] = chessman.Chessman(color, 'rook', [r, 7])
 
     def define_teams(self):
-        self.whites = []
-        self.blacks = []
+        whites = []
+        blacks = []
         for i in range(len(self.board)):
             for j in range(len(self.board[i])):
                 if self.is_chessman(i, j):
                     if self.board[i][j].color == 'w':
-                        self.whites.append(self.board[i][j])
+                        whites.append(self.board[i][j])
                     else:
-                        self.blacks.append(self.board[i][j])
+                        blacks.append(self.board[i][j])
+
+        self.white_player.pieces = whites
+        self.black_player.pieces = blacks
 
     def reset_board(self):
         self.board = [['' for _ in range(8)] for _ in range(8)]
         self.populate_board()
         self.define_teams()
         self.set_valid_moves()
-        self.move_log = []
-        self.current_move = 0.0
 
-    def move(self, r1, c1, r2, c2):
+        self.current_move = 0.0
+        self.move_log = []
+
+    def make_move(self, r1, c1, r2, c2):
+        if not self.is_chessman(r1, c1):
+            return
         self.update_log()
         self.current_move += 0.5
         played_piece = self.board[r1][c1]
         if self.is_chessman(r2, c2):
             taken_piece = self.board[r2][c2]
-            if taken_piece in self.whites:
-                self.whites.remove(taken_piece)
+            if self.who_plays == self.white_player:
+                self.black_player.pieces.remove(taken_piece)
             else:
-                self.blacks.remove(taken_piece)
+                self.white_player.pieces.remove(taken_piece)
 
-        self.board[r2][c2] = played_piece
-        self.board[r1][c1] = ''
         played_piece.active = True
+        played_piece.position = [r2, c2]
+        self.toggle_player()
+
+    def move(self, r1, c1, r2, c2):
+        self.board[r2][c2] = self.board[r1][c1]
+        self.board[r1][c1] = ''
+
+    def toggle_player(self):
+        if self.who_plays == self.white_player:
+            self.who_plays = self.black_player
+        else:
+            self.who_plays = self.white_player
 
     def undo(self):
         if self.current_move > 0:
             self.board = self.move_log.pop(-1)
             self.define_teams()
+            self.set_valid_moves()
             self.current_move -= 0.5
             return True
         else:
@@ -94,14 +115,12 @@ class ChessSet:
         return players_piece
 
     def set_valid_moves(self):
-        for r in range(len(self.board)):
-            for c in range(len(self.board[r])):
-                if self.is_chessman(r, c):
-                    self.list_possible_moves(r, c)
+        for player in [self.white_player, self.black_player]:
+            for piece in player.pieces:
+                self.list_valid_moves(piece)
 
-
-    def list_possible_moves(self, row, col):
-        piece = self.board[row][col]
+    def list_valid_moves(self, piece):
+        row, col = piece.position
         move_list = []
 
         if piece.type == 'pawn':
@@ -137,7 +156,13 @@ class ChessSet:
                     move_list.append([r2, c2])
 
         elif piece.type == 'king':
-            move_list = []
+            for move in [[0, 1], [0, -1], [1, 0], [-1, 0], [1, 1], [1, -1], [-1, 1], [-1, -1]]:
+                r2 = row + move[0]
+                c2 = col + move[1]
+                moves_inbound = r2 in range(8) and c2 in range(8)
+                if moves_inbound and not self.is_players_piece(r2, c2, piece.color) and not self.is_check(r2, c2, piece.color):
+                    move_list.append([r2, c2])
+            # Add castle mechanics
 
         else:
             if piece.type == 'queen':
@@ -151,7 +176,8 @@ class ChessSet:
                 for l in range(1, 8):
                     r2 = row + l*axis[0]
                     c2 = col + l*axis[1]
-                    if r2 in range(8) and c2 in range(8) and not self.is_players_piece(r2, c2, piece.color):
+                    moves_inbound = r2 in range(8) and c2 in range(8)
+                    if moves_inbound and not self.is_players_piece(r2, c2, piece.color):
                         move_list.append([r2, c2])
                         if self.is_chessman(r2, c2):
                             break
@@ -162,35 +188,47 @@ class ChessSet:
         piece.valid_moves = move_list
         return move_list
 
+    def is_check(self, row, col, color):
+        if color == 'w':
+            opponents = self.black_player.pieces
+        else:
+            opponents = self.white_player.pieces
+
+        for opp in opponents:
+            if [row, col] in opp.valid_moves:
+                return True
+
+        return False
+
 
 #############################
 ### End of class ChessSet ###
 #############################
 
-def cmd_display(board_state):
+def cmd_display(chess):
+
+    board_state = chess.board
+
     print('\n\n\t' + '|----'*8 + '|')
     for r in range(8):
         print('\t|', end='')
         for c in range(8):
             p = board_state[r][c]
-            if type(p) == chessman.Chessman:
-                if p.type == 'knight':
-                    print(f'{p.color}{p.type[1]}'.center(4), end='|')
-                else:
-                    print(f'{p.color}{p.type[0]}'.center(4), end='|')
+            if chess.is_chessman(r, c):
+                print(f'{p.color}{p.notation_letter}'.center(4), end='|')
             else:
                 print(p.center(4), end='|')
-        print(set.rows[r].center(3), end='')
+        print(chess.rows_numbers[r].center(3), end='')
         print('\n\t' + '|----'*8 + '|')
     print('\t ', end='')
+
     for c in range(8):
-        print(set.cols[c].center(5), end='')
+        print(chess.cols_letters[c].center(5), end='')
     print('\n')
 
 if __name__ == '__main__':
     set = ChessSet()
-    set.move(1, 1, 5, 1)
-    cmd_display(set.board)
+    set.move(0, 3, 5, 1)
+    cmd_display(set)
     set.set_valid_moves()
-    print(f"White moves are: {set.board[6][1].valid_moves}")
-    print(f"Black moves are: {set.board[5][1].valid_moves}")
+    print(set.board[5][1].valid_moves)
