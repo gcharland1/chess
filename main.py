@@ -9,25 +9,29 @@ def main():
     bg = pygame.image.load(IMAGE_DIR + BG_IMAGE)
 
     whos_turn = 'w'
-    r1, c1 = (-1, -1)
+    r1, c1 = [-1, -1]
 
     running = True
-    update_display(root, bg, set, whos_turn)
+    update_display(root, bg, set, r1, c1)
 
     while running:
         update = False
         for event in pygame.event.get():
             if event.type == pygame.MOUSEBUTTONUP:
-                r1, c1, whos_turn = make_move(set, event.pos, whos_turn, r1, c1)
+                r1, c1 = make_move(set, event.pos, r1, c1)
                 update = True
 
             if event.type == pygame.KEYUP:
                 if event.key == pygame.K_u:
-                    whos_turn = undo_move(set, whos_turn)
+                    undid = set.undo()
+                    r1 = -1
+                    c1 = -1
                     update = True
+
                 if event.key == pygame.K_r:
-                    whos_turn = new_game(set)
+                    set.reset_board()
                     update = True
+
                 if event.key == pygame.K_m:
                     print('Display Menu')
 
@@ -35,26 +39,34 @@ def main():
                 running = False
 
         if update:
-            update_display(root, bg, set, whos_turn)
+            update_display(root, bg, set, r1, c1)
+            set.set_players_moves()
 
     pygame.display.quit()
     return False
 
-def update_display(root, bg, set, whos_turn):
-    if whos_turn == 'w':
+def update_display(root, bg, set, r1, c1):
+    if set.who_plays.color == 'w':
         color = 'White'
     else:
         color = 'Black'
     caption = f'Chess Game - {color} to play'
     pygame.display.set_caption(caption)
+
     root.blit(bg, (0, 0))
-    for r in range(len(set.board)):
-        for c in range(len(set.board)):
-            if set.is_chessman(r, c):
-                img = set.board[r][c].image
-                x = int(SQ_W*c + 2)
-                y = int(SQ_H*r + 2)
-                root.blit(pygame.image.load(IMAGE_DIR + img), (x, y))
+    for team in [set.white_player, set.black_player]:
+        for piece in team.pieces:
+            img = piece.image
+            r, c = piece.position
+            x = int(SQ_W * c + 2)
+            y = int(SQ_H * r + 2)
+            root.blit(pygame.image.load(IMAGE_DIR + img), (x, y))
+
+    if r1 > -1 and set.is_chessman(r1, c1):
+        for m in set.board[r1][c1].valid_moves:
+            x = int(SQ_W * m[1])
+            y = int(SQ_H * m[0])
+            root.blit(pygame.image.load(IMAGE_DIR + 'allowed_move.png'), (x, y))
 
     pygame.display.update()
 
@@ -63,43 +75,26 @@ def get_board_index(pos):
     r = int(pos[1]/SQ_H)
     return (r, c)
 
-def make_move(set, event_pos, whos_turn, r1, c1):
+def make_move(set, event_pos, r1, c1):
     if (r1, c1) == (-1, -1):
         r, c = get_board_index(event_pos)
-        if set.is_valid_piece(r, c, whos_turn):
-            return r, c, whos_turn
+        if set.is_players_piece(r, c, set.who_plays):
+            print(set.board[r][c].valid_moves)
+            return r, c
         else:
             print('Please pick a valid piece. Look at caption to see which color plays.')
-            return -1, -1, whos_turn
+            return -1, -1
     else:
         r2, c2 = get_board_index(event_pos)
-        valid_move, take = set.is_valid_move(r1, c1, r2, c2, whos_turn)
-        if valid_move:
-            set.move(r1, c1, r2, c2, take)
-            whos_turn = switch_teams(whos_turn)
+        if [r2, c2] in set.board[r1][c1].valid_moves:
+            set.make_move(r1, c1, r2, c2)
         else:
             print('Invalid Move')
 
         r1, c1 = -1, -1
 
-    return r1, c1, whos_turn
+    return r1, c1
 
-def undo_move(set, whos_turn):
-    undid = set.undo()
-    if undid:
-        switch_teams(whos_turn)
-    else:
-        return whos_turn
-
-def switch_teams(team):
-    if team == 'w':
-        return 'b'
-    else:
-        return 'w'
-
-def new_game(set):
-    set.reset_board()
-    return 'w'
 
 
 IMAGE_DIR = './images/'
