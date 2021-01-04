@@ -4,9 +4,12 @@
 ``python3 -m venv venv``
 
 Initiate venv on Windows:
+
 ``venv/Scripts/activate.bat``
+
 ... on Linux/MacOS:
-``source venv/([)...(])/activate``
+
+``source venv/[...]/activate``
 
 ## Requirements:
 ``pip install -r requirements.txt``
